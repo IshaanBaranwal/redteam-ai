@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 
+type RunRow = {
+  id: string; version: number; score: number; verdict: string; weakestPoint: string;
+  inputType: string; inputText: string; createdAt: Date;
+  attacks: { personaId: string; headline: string; body: string; question: string; severity: number }[];
+  competitors: { name: string; pricing: string; market: string; gap: string; sentiment: string }[];
+};
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -27,7 +34,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     id: thread.id,
     title: thread.title,
     inputType: thread.inputType,
-    runs: thread.runs.map(r => ({
+    runs: (thread.runs as RunRow[]).map(r => ({
       id: r.id,
       version: r.version,
       score: r.score,
