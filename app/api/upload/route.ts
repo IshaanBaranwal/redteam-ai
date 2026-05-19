@@ -25,11 +25,10 @@ export async function POST(req: NextRequest) {
   }
 
   if (ext === "pptx") {
-    // TODO: install officeparser for PPTX support
-    return NextResponse.json(
-      { error: "PPTX parsing not yet available. Please paste your content as text." },
-      { status: 422 }
-    );
+    const officeParser = await import("officeparser");
+    const ast = await officeParser.parseOffice(buffer);
+    const extractedText = ast.toText();
+    return NextResponse.json({ extractedText });
   }
 
   return NextResponse.json({ error: `Unsupported file type: .${ext}` }, { status: 415 });
