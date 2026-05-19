@@ -89,3 +89,11 @@ input[type="text"]:focus {
   border-color: var(--blue);
   box-shadow: 2px 2px 0px 0px var(--blue);
 }
+
+/* Mobile base */
+@media (max-width: 767px) {
+  html, body { overflow-x: hidden; }
+
+  /* Reduce card rotations on mobile so nothing bleeds off-screen */
+  [style*="rotate"] { transform: none !important; }
+}

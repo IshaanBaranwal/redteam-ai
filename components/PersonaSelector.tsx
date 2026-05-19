@@ -1,6 +1,7 @@
 "use client";
 
 import { PERSONAS } from "@/lib/personas";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 const ROTATIONS = [-1.2, 0.8, -0.5, 1.1, -0.9, 0.6];
 
@@ -22,6 +23,7 @@ export default function PersonaSelector({
   onRemoveCustomPersona,
 }: PersonaSelectorProps) {
   const totalActive = selected.length;
+  const isMobile = useIsMobile();
 
   return (
     <div style={{
@@ -34,7 +36,7 @@ export default function PersonaSelector({
       <div style={{ fontSize: 12, color: "#aaa", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 14, fontFamily: "var(--font-body)" }}>
         Attackers — <span style={{ color: "#ff4d4d", fontFamily: "var(--font-heading)", fontWeight: 700 }}>{totalActive}</span> active
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "1fr 1fr 1fr", gap: 10 }}>
         {PERSONAS.map((p, i) => {
           const on = selected.includes(p.id);
           return (

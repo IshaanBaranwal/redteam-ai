@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 interface Thread { id: string; title: string; score: number; runs: number; date: string; scores: number[]; }
 
@@ -39,11 +40,15 @@ function Sparkline({ scores }: { scores: number[] }) {
 }
 
 export default function Sidebar() {
+  const isMobile = useIsMobile();
   const [open, setOpen] = useState(true);
   const [threads, setThreads] = useState<Thread[]>([]);
   const [creating, setCreating] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+
+  // Close sidebar by default on mobile
+  useEffect(() => { if (isMobile) setOpen(false); }, [isMobile]);
 
   const fetchThreads = useCallback(async () => {
     try {
@@ -79,13 +84,21 @@ export default function Sidebar() {
     <>
       {!open && (
         <button onClick={() => setOpen(true)} style={{
-          position: "fixed", top: 14, left: 14, zIndex: 20,
+          position: "fixed", top: 14, left: 14, zIndex: 30,
           background: "#fff", border: "2px solid #2d2d2d",
           borderRadius: "5px 15px 5px 15px / 15px 5px 15px 5px",
           color: "#2d2d2d", cursor: "pointer", fontSize: 16,
           padding: "4px 10px", boxShadow: "3px 3px 0px 0px #2d2d2d",
           fontFamily: "var(--font-body)",
         }}>☰</button>
+      )}
+
+      {/* Mobile backdrop */}
+      {isMobile && open && (
+        <div onClick={() => setOpen(false)} style={{
+          position: "fixed", inset: 0, zIndex: 19,
+          background: "rgba(0,0,0,0.35)",
+        }} />
       )}
 
       <div style={{
@@ -98,6 +111,10 @@ export default function Sidebar() {
         display: "flex", flexDirection: "column",
         transition: "width 0.25s, min-width 0.25s",
         overflow: "hidden", flexShrink: 0,
+        ...(isMobile ? {
+          position: "fixed", top: 0, left: 0,
+          height: "100vh", zIndex: 20,
+        } : {}),
       }}>
 
         {/* Header */}

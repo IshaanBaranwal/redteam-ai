@@ -94,10 +94,10 @@ export default function LandingPage() {
       {/* Nav */}
       <nav style={{
         position: "sticky", top: 0, zIndex: 50,
-        height: 60, borderBottom: "2px dashed #2d2d2d",
+        minHeight: 60, borderBottom: "2px dashed #2d2d2d",
         background: "#fdfbf7",
-        display: "flex", alignItems: "center",
-        padding: "0 40px", justifyContent: "space-between",
+        display: "flex", alignItems: "center", flexWrap: "wrap",
+        padding: "10px 20px", justifyContent: "space-between", gap: 8,
       }}>
         <div style={{ fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: 24, color: "#2d2d2d" }}>
           redteam<span style={{ color: "#ff4d4d" }}>.</span>ai

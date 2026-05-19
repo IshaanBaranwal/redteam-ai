@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import dynamic from "next/dynamic";
 import { UserButton } from "@clerk/nextjs";
 import InputCard from "@/components/InputCard";
@@ -19,16 +20,23 @@ interface Competitor { name: string; pricing: string; market: string; gap: strin
 interface RunResult { score: number; verdict: string; weakestPoint: string; attacks: Attack[]; runId: string; version: number; }
 interface VersionEntry { v: number; score: number; date: string; label: string; }
 
-type Tab = "attacks" | "competitors" | "progress";
-const TABS: { id: Tab; label: string }[] = [
+type Tab = "attacks" | "competitors" | "progress" | "score";
+const DESKTOP_TABS: { id: Tab; label: string }[] = [
   { id: "attacks", label: "Attack report" },
   { id: "competitors", label: "Competitive intel" },
   { id: "progress", label: "Progress" },
+];
+const MOBILE_TABS: { id: Tab; label: string }[] = [
+  { id: "attacks", label: "Attacks" },
+  { id: "competitors", label: "Intel" },
+  { id: "progress", label: "Progress" },
+  { id: "score", label: "Score" },
 ];
 
 export default function ThreadPage() {
   const params = useParams();
   const threadId = params.id as string;
+  const isMobile = useIsMobile();
 
   const [inputType, setInputType] = useState("idea");
   const [inputText, setInputText] = useState("");
@@ -296,7 +304,7 @@ export default function ThreadPage() {
       <div style={{
         height: 56, borderBottom: "2px solid #2d2d2d",
         display: "flex", alignItems: "center",
-        padding: "0 20px", gap: 12, flexShrink: 0,
+        padding: isMobile ? "0 12px 0 52px" : "0 20px", gap: 12, flexShrink: 0,
         background: "#fdfbf7",
       }}>
         <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 10 }}>
@@ -355,10 +363,10 @@ export default function ThreadPage() {
       </div>
 
       {/* Content grid */}
-      <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 340px", overflow: "hidden" }}>
+      <div style={{ flex: 1, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 340px", overflow: "hidden" }}>
 
         {/* Center */}
-        <div style={{ overflowY: "auto", padding: 24, borderRight: "2px solid #2d2d2d" }}>
+        <div style={{ overflowY: "auto", padding: isMobile ? 16 : 24, borderRight: isMobile ? "none" : "2px solid #2d2d2d" }}>
           <InputCard inputType={inputType} inputText={inputText} onInputTypeChange={setInputType} onInputTextChange={setInputText} />
           <PersonaSelector
             selected={selectedPersonas}
@@ -415,14 +423,15 @@ export default function ThreadPage() {
 
           {/* Output tabs */}
           <div style={{ marginTop: 28 }}>
-            <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-              {TABS.map(t => (
+            <div style={{ display: "flex", gap: isMobile ? 6 : 8, marginBottom: 20, flexWrap: "wrap" }}>
+              {(isMobile ? MOBILE_TABS : DESKTOP_TABS).map(t => (
                 <button
                   key={t.id}
                   onClick={() => setActiveTab(t.id)}
                   style={{
-                    padding: "8px 18px",
-                    fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: 14,
+                    padding: isMobile ? "7px 12px" : "8px 18px",
+                    fontFamily: "var(--font-heading)", fontWeight: 700,
+                    fontSize: isMobile ? 13 : 14,
                     cursor: "pointer",
                     background: activeTab === t.id ? "#2d2d2d" : "#fff",
                     color: activeTab === t.id ? "#fff" : "#2d2d2d",
@@ -448,11 +457,33 @@ export default function ThreadPage() {
             )}
             {activeTab === "competitors" && <CompetitorTable competitors={competitors} />}
             {activeTab === "progress" && <ProgressPanel versions={versions} />}
+            {activeTab === "score" && isMobile && (
+              <RightPanel
+                score={currentResult?.score ?? 0}
+                verdict={currentResult?.verdict}
+                weakestPoint={currentResult?.weakestPoint}
+                stats={stats}
+                memoryItems={memoryItems}
+                versions={versions}
+                exportSlot={
+                  currentResult ? (
+                    <PDFExportButton
+                      threadTitle={threadTitle}
+                      score={currentResult.score}
+                      verdict={currentResult.verdict}
+                      weakestPoint={currentResult.weakestPoint}
+                      attacks={currentResult.attacks}
+                      competitors={competitors}
+                    />
+                  ) : undefined
+                }
+              />
+            )}
           </div>
         </div>
 
-        {/* Right panel */}
-        <div style={{ overflowY: "auto", borderLeft: "2px solid #2d2d2d" }}>
+        {/* Right panel — desktop only */}
+        {!isMobile && <div style={{ overflowY: "auto", borderLeft: "2px solid #2d2d2d" }}>
           <RightPanel
             score={currentResult?.score ?? 0}
             verdict={currentResult?.verdict}
@@ -473,7 +504,7 @@ export default function ThreadPage() {
               ) : undefined
             }
           />
-        </div>
+        </div>}
       </div>
     </div>
   );
