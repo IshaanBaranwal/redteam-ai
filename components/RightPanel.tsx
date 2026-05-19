@@ -140,6 +140,24 @@ export default function RightPanel({ score, verdict, weakestPoint, stats = [], m
           ↓ Export PDF report
         </button>
       )}
+
+      <a
+        href="https://ko-fi.com/ishaanbaranwal"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          display: "block", textAlign: "center", textDecoration: "none",
+          marginTop: 10, padding: "9px 0",
+          fontFamily: "var(--font-body)", fontSize: 13, color: "#aaa",
+          border: "2px dashed #e5e0d8",
+          borderRadius: "5px 15px 5px 15px / 15px 5px 15px 5px",
+          transition: "all 0.15s",
+        }}
+        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#2d2d2d"; (e.currentTarget as HTMLElement).style.borderColor = "#2d2d2d"; (e.currentTarget as HTMLElement).style.background = "#fff9c4"; }}
+        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#aaa"; (e.currentTarget as HTMLElement).style.borderColor = "#e5e0d8"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+      >
+        ☕ Buy me a coffee
+      </a>
     </div>
   );
 }

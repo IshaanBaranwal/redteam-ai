@@ -70,7 +70,7 @@ export default function RunLimitModal({ runsUsed, limit, onClose }: RunLimitModa
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {/* Ko-fi button — link updated in next step */}
           <a
-            href="https://ko-fi.com"
+            href="https://ko-fi.com/ishaanbaranwal"
             target="_blank"
             rel="noopener noreferrer"
             style={{

@@ -103,6 +103,22 @@ export default function LandingPage() {
           redteam<span style={{ color: "#ff4d4d" }}>.</span>ai
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <a
+            href="https://ko-fi.com/ishaanbaranwal"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              fontFamily: "var(--font-body)", fontSize: 13, color: "#aaa",
+              textDecoration: "none", padding: "6px 12px",
+              border: "2px dashed #e5e0d8",
+              borderRadius: "5px 15px 5px 15px / 15px 5px 15px 5px",
+              transition: "all 0.15s",
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#2d2d2d"; (e.currentTarget as HTMLElement).style.borderColor = "#2d2d2d"; (e.currentTarget as HTMLElement).style.background = "#fff9c4"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#aaa"; (e.currentTarget as HTMLElement).style.borderColor = "#e5e0d8"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+          >
+            ☕ Ko-fi
+          </a>
           <Link href="/sign-in" style={{ fontFamily: "var(--font-body)", fontSize: 14, color: "#555", textDecoration: "none", padding: "6px 14px" }}>
             Sign in
           </Link>
@@ -482,9 +498,17 @@ export default function LandingPage() {
         <div style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "#aaa" }}>
           Battle-test your ideas before the market does.
         </div>
-        <div style={{ display: "flex", gap: 20 }}>
+        <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
           <Link href="/sign-in" style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "#aaa", textDecoration: "none" }}>Sign in</Link>
           <Link href="/sign-up" style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "#aaa", textDecoration: "none" }}>Sign up</Link>
+          <a
+            href="https://ko-fi.com/ishaanbaranwal"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "#aaa", textDecoration: "none" }}
+          >
+            ☕ Ko-fi
+          </a>
         </div>
       </footer>
     </div>
