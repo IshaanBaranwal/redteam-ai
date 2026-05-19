@@ -13,54 +13,64 @@ async function getOrCreateUser(clerkId: string) {
 }
 
 export async function GET() {
-  const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const { userId } = await auth();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const user = await getOrCreateUser(userId);
+    const user = await getOrCreateUser(userId);
 
-  const threads = await prisma.thread.findMany({
-    where: { userId: user.id },
-    orderBy: { updatedAt: "desc" },
-    include: {
-      runs: {
-        orderBy: { version: "asc" },
-        select: { score: true, version: true },
+    const threads = await prisma.thread.findMany({
+      where: { userId: user.id },
+      orderBy: { updatedAt: "desc" },
+      include: {
+        runs: {
+          orderBy: { version: "asc" },
+          select: { score: true, version: true },
+        },
       },
-    },
-  });
+    });
 
-  const now = Date.now();
-  const formatted = threads.map(t => {
-    const latestRun = t.runs[t.runs.length - 1];
-    const diffMs = now - t.updatedAt.getTime();
-    const diffDays = Math.floor(diffMs / 86400000);
-    const date = diffDays === 0 ? "Today" : diffDays === 1 ? "Yesterday" : `${diffDays} days ago`;
-    return {
-      id: t.id,
-      title: t.title,
-      score: latestRun?.score ?? 0,
-      runs: latestRun?.version ?? 0,
-      date,
-      scores: t.runs.map(r => r.score),
-    };
-  });
+    const now = Date.now();
+    const formatted = threads.map(t => {
+      const latestRun = t.runs[t.runs.length - 1];
+      const diffMs = now - t.updatedAt.getTime();
+      const diffDays = Math.floor(diffMs / 86400000);
+      const date = diffDays === 0 ? "Today" : diffDays === 1 ? "Yesterday" : `${diffDays} days ago`;
+      return {
+        id: t.id,
+        title: t.title,
+        score: latestRun?.score ?? 0,
+        runs: latestRun?.version ?? 0,
+        date,
+        scores: t.runs.map(r => r.score),
+      };
+    });
 
-  return NextResponse.json({ threads: formatted });
+    return NextResponse.json({ threads: formatted });
+  } catch (err) {
+    console.error("[GET /api/threads]", err);
+    return NextResponse.json({ error: String(err) }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
-  const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const { userId } = await auth();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const user = await getOrCreateUser(userId);
-  const body = await req.json().catch(() => ({}));
-  const inputType = body.inputType ?? "idea";
+    const user = await getOrCreateUser(userId);
+    const body = await req.json().catch(() => ({}));
+    const inputType = body.inputType ?? "idea";
 
-  const thread = await prisma.thread.create({
-    data: { userId: user.id, title: "New thread", inputType },
-  });
+    const thread = await prisma.thread.create({
+      data: { userId: user.id, title: "New thread", inputType },
+    });
 
-  return NextResponse.json({ thread });
+    return NextResponse.json({ thread });
+  } catch (err) {
+    console.error("[POST /api/threads]", err);
+    return NextResponse.json({ error: String(err) }, { status: 500 });
+  }
 }
 
 export async function DELETE(req: NextRequest) {
