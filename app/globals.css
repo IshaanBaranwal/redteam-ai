@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+:root {
+  --bg:     #fdfbf7;
+  --fg:     #2d2d2d;
+  --muted:  #e5e0d8;
+  --accent: #ff4d4d;
+  --blue:   #2d5da1;
+  --yellow: #fff9c4;
+  --white:  #ffffff;
+  --border: #2d2d2d;
+
+  --font-heading: var(--font-kalam), cursive;
+  --font-body:    var(--font-patrick), cursive;
+
+  --shadow:    4px 4px 0px 0px #2d2d2d;
+  --shadow-lg: 8px 8px 0px 0px #2d2d2d;
+  --shadow-sm: 2px 2px 0px 0px #2d2d2d;
+  --shadow-hover: 2px 2px 0px 0px #2d2d2d;
+
+  --r-lg:   255px 15px 225px 15px / 15px 225px 15px 255px;
+  --r-md:   30px 5px 20px 5px / 5px 20px 5px 30px;
+  --r-btn:  5px 15px 5px 15px / 15px 5px 15px 5px;
+  --r-chip: 8px 32px 8px 32px / 32px 8px 32px 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--bg);
+  background-image: radial-gradient(var(--muted) 1px, transparent 1px);
+  background-size: 24px 24px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--fg);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scrollbar-color: #c5bfb6 var(--bg);
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: #c5bfb6; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #a8a09a; }
+* { scrollbar-color: #c5bfb6 var(--bg); scrollbar-width: thin; }
+
+textarea {
+  width: 100%;
+  background: var(--white);
+  border: 2px solid var(--border);
+  border-radius: 30px 5px 20px 5px / 5px 20px 5px 30px;
+  padding: 14px 16px;
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.7;
+  resize: none;
+  outline: none;
+  transition: border-color 0.1s, box-shadow 0.1s;
+  box-shadow: var(--shadow-sm);
+}
+
+textarea:focus {
+  border-color: var(--blue);
+  box-shadow: 2px 2px 0px 0px var(--blue);
+}
+
+textarea::placeholder { color: #aaa; }
+
+input[type="text"] {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--fg);
+  background: var(--white);
+  border: 2px solid var(--border);
+  border-radius: 5px 15px 5px 15px / 15px 5px 15px 5px;
+  padding: 8px 14px;
+  outline: none;
+  box-shadow: var(--shadow-sm);
+}
+
+input[type="text"]:focus {
+  border-color: var(--blue);
+  box-shadow: 2px 2px 0px 0px var(--blue);
+}

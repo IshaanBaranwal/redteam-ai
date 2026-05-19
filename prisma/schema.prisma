@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String   @unique
+  threads   Thread[]
+  createdAt DateTime @default(now())
+}
+
+model Thread {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String   @default("New thread")
+  inputType String   @default("idea")
+  runs      Run[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Run {
+  id           String       @id @default(cuid())
+  threadId     String
+  thread       Thread       @relation(fields: [threadId], references: [id])
+  version      Int
+  inputText    String       @db.Text
+  inputType    String
+  score        Int
+  verdict      String
+  weakestPoint String
+  attacks      Attack[]
+  competitors  Competitor[]
+  createdAt    DateTime     @default(now())
+}
+
+model Attack {
+  id        String @id @default(cuid())
+  runId     String
+  run       Run    @relation(fields: [runId], references: [id])
+  personaId String
+  headline  String
+  body      String @db.Text
+  question  String
+  severity  Int
+}
+
+model Competitor {
+  id        String @id @default(cuid())
+  runId     String
+  run       Run    @relation(fields: [runId], references: [id])
+  name      String
+  pricing   String
+  market    String
+  gap       String
+  sentiment String
+}
