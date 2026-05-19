@@ -12,6 +12,7 @@ import CompetitorTable from "@/components/CompetitorTable";
 import ProgressPanel from "@/components/ProgressPanel";
 import RightPanel from "@/components/RightPanel";
 import CustomPersonaModal from "@/components/CustomPersonaModal";
+import RunLimitModal from "@/components/RunLimitModal";
 
 const PDFExportButton = dynamic(() => import("@/components/PDFExportButton"), { ssr: false });
 
@@ -54,6 +55,11 @@ export default function ThreadPage() {
   const [customPersona, setCustomPersona] = useState<{ id: string; name: string; role: string; icon: string } | null>(null);
   const [showCustomModal, setShowCustomModal] = useState(false);
 
+  // Usage limit state
+  const FREE_LIMIT = 10;
+  const [totalRunsUsed, setTotalRunsUsed] = useState(0);
+  const [showLimitModal, setShowLimitModal] = useState(false);
+
   // Diff state
   const prevAttacksRef = useRef<Attack[]>([]);
   const [attackDiff, setAttackDiff] = useState<Record<string, "new" | "repeated">>({});
@@ -65,6 +71,14 @@ export default function ThreadPage() {
   const titleInputRef = useRef<HTMLInputElement>(null);
 
   const abortRef = useRef<AbortController | null>(null);
+
+  // Load total run count for limit display
+  useEffect(() => {
+    fetch("/api/usage")
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.runsUsed != null) setTotalRunsUsed(d.runsUsed); })
+      .catch(() => {});
+  }, []);
   // Used to save competitors to DB once both runId and research results are available
   const pendingCompetitorsRef = useRef<Competitor[]>([]);
   const completedRunIdRef = useRef<string | null>(null);
@@ -98,6 +112,7 @@ export default function ThreadPage() {
 
           // Load saved competitors from latest run
           if (latest.competitors?.length) setCompetitors(latest.competitors);
+
 
           // Compute diff between latest and previous run on load
           if (data.runs.length >= 2) {
@@ -201,6 +216,14 @@ export default function ThreadPage() {
         signal: abortRef.current.signal,
       });
 
+      if (res.status === 402) {
+        const data = await res.json();
+        setTotalRunsUsed(data.runsUsed ?? FREE_LIMIT);
+        setShowLimitModal(true);
+        setIsRunning(false);
+        return;
+      }
+
       if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
 
       const reader = res.body.getReader();
@@ -245,6 +268,7 @@ export default function ThreadPage() {
 
               // Notify sidebar to refresh scores
               window.dispatchEvent(new CustomEvent("run-completed"));
+              setTotalRunsUsed(n => n + 1);
             }
             if (event.type === "error") console.error("Attack error:", event.message);
           } catch {}
@@ -286,6 +310,15 @@ export default function ThreadPage() {
 
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", height: "100%" }}>
+
+      {/* Run limit modal */}
+      {showLimitModal && (
+        <RunLimitModal
+          runsUsed={totalRunsUsed}
+          limit={FREE_LIMIT}
+          onClose={() => setShowLimitModal(false)}
+        />
+      )}
 
       {/* Custom persona modal */}
       {showCustomModal && (
@@ -379,9 +412,22 @@ export default function ThreadPage() {
             }}
           />
 
+          {/* Runs remaining */}
+          {totalRunsUsed > 0 && (
+            <div style={{
+              textAlign: "right", marginBottom: 8,
+              fontFamily: "var(--font-body)", fontSize: 12,
+              color: totalRunsUsed >= FREE_LIMIT ? "#ff4d4d" : totalRunsUsed >= FREE_LIMIT - 2 ? "#f59e0b" : "#aaa",
+            }}>
+              {FREE_LIMIT - totalRunsUsed <= 0
+                ? "Free run limit reached"
+                : `${FREE_LIMIT - totalRunsUsed} free run${FREE_LIMIT - totalRunsUsed === 1 ? "" : "s"} remaining`}
+            </div>
+          )}
+
           {/* Run button */}
           <button
-            onClick={handleRunAttack}
+            onClick={totalRunsUsed >= FREE_LIMIT ? () => setShowLimitModal(true) : handleRunAttack}
             disabled={isRunning || !canRun}
             title="⌘↵ to run"
             style={{

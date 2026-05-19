@@ -36,11 +36,25 @@ function extractJSON(text: string): string {
   return text.trim();
 }
 
+const FREE_RUN_LIMIT = 10;
+
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) return new Response("Unauthorized", { status: 401 });
 
   const { inputText, inputType, personaIds, threadId, priorRuns = [], customPersonas = [] } = await req.json();
+
+  // Enforce free run limit
+  const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+  if (user) {
+    const totalRuns = await prisma.run.count({ where: { thread: { userId: user.id } } });
+    if (totalRuns >= FREE_RUN_LIMIT) {
+      return new Response(
+        JSON.stringify({ error: "limit_reached", runsUsed: totalRuns, limit: FREE_RUN_LIMIT }),
+        { status: 402, headers: { "Content-Type": "application/json" } }
+      );
+    }
+  }
 
   if (!inputText || !inputType || !personaIds?.length) {
     return new Response("Missing required fields", { status: 400 });
