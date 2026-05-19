@@ -61,6 +61,27 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   });
 }
 
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { id } = await params;
+
+  const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+  if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+
+  const thread = await prisma.thread.findFirst({ where: { id, userId: user.id }, include: { runs: true } });
+  if (!thread) return NextResponse.json({ error: "Thread not found" }, { status: 404 });
+
+  const runIds = thread.runs.map(r => r.id);
+  await prisma.attack.deleteMany({ where: { runId: { in: runIds } } });
+  await prisma.competitor.deleteMany({ where: { runId: { in: runIds } } });
+  await prisma.run.deleteMany({ where: { threadId: id } });
+  await prisma.thread.delete({ where: { id } });
+
+  return NextResponse.json({ ok: true });
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

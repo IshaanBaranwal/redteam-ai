@@ -44,8 +44,20 @@ export default function Sidebar() {
   const [open, setOpen] = useState(true);
   const [threads, setThreads] = useState<Thread[]>([]);
   const [creating, setCreating] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const pathname = usePathname();
   const router = useRouter();
+
+  const handleDelete = async (e: React.MouseEvent, threadId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (confirmDeleteId !== threadId) { setConfirmDeleteId(threadId); return; }
+    setConfirmDeleteId(null);
+    await fetch(`/api/threads/${threadId}`, { method: "DELETE" });
+    setThreads(prev => prev.filter(t => t.id !== threadId));
+    if (pathname === `/thread/${threadId}`) router.push("/thread");
+  };
 
   // Close sidebar by default on mobile
   useEffect(() => { if (isMobile) setOpen(false); }, [isMobile]);
@@ -151,32 +163,64 @@ export default function Sidebar() {
 
           {threads.map(t => {
             const active = pathname === `/thread/${t.id}`;
+            const confirming = confirmDeleteId === t.id;
+            const hovered = hoveredId === t.id;
             return (
-              <Link key={t.id} href={`/thread/${t.id}`} style={{ textDecoration: "none", display: "block", marginBottom: 6 }}>
-                <div style={{
-                  padding: "10px 12px",
-                  cursor: "pointer",
-                  borderRadius: "8px 2px 8px 2px / 2px 8px 2px 8px",
-                  border: active ? "2px solid #2d2d2d" : "1.5px dashed #ccc",
-                  background: active ? "#fff" : "transparent",
-                  boxShadow: active ? "3px 3px 0px 0px #2d2d2d" : "none",
-                  transition: "all 0.1s",
-                  transform: active ? "none" : undefined,
-                }}>
-                  <div style={{ fontSize: 13, marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: active ? "#2d2d2d" : "#555", fontWeight: active ? 700 : 400, fontFamily: "var(--font-body)" }}>
-                    {t.title}
-                  </div>
-                  {t.scores && t.scores.length >= 2 && (
-                    <div style={{ marginBottom: 4 }}>
-                      <Sparkline scores={t.scores} />
+              <div
+                key={t.id}
+                style={{ position: "relative", marginBottom: 6 }}
+                onMouseEnter={() => setHoveredId(t.id)}
+                onMouseLeave={() => { setHoveredId(null); if (confirmDeleteId === t.id) setConfirmDeleteId(null); }}
+              >
+                <Link href={`/thread/${t.id}`} style={{ textDecoration: "none", display: "block" }}>
+                  <div style={{
+                    padding: "10px 12px",
+                    paddingRight: hovered || confirming ? 36 : 12,
+                    cursor: "pointer",
+                    borderRadius: "8px 2px 8px 2px / 2px 8px 2px 8px",
+                    border: active ? "2px solid #2d2d2d" : "1.5px dashed #ccc",
+                    background: confirming ? "#fff0f0" : active ? "#fff" : "transparent",
+                    boxShadow: active ? "3px 3px 0px 0px #2d2d2d" : "none",
+                    transition: "all 0.1s",
+                  }}>
+                    <div style={{ fontSize: 13, marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: active ? "#2d2d2d" : "#555", fontWeight: active ? 700 : 400, fontFamily: "var(--font-body)" }}>
+                      {confirming ? "Delete this thread?" : t.title}
                     </div>
-                  )}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: scoreColor(t.score), fontFamily: "var(--font-heading)" }}>{t.score || "—"}</span>
-                    <span style={{ fontSize: 11, color: "#aaa", fontFamily: "var(--font-body)" }}>{t.runs}v · {t.date}</span>
+                    {!confirming && t.scores && t.scores.length >= 2 && (
+                      <div style={{ marginBottom: 4 }}>
+                        <Sparkline scores={t.scores} />
+                      </div>
+                    )}
+                    {!confirming && (
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: scoreColor(t.score), fontFamily: "var(--font-heading)" }}>{t.score || "—"}</span>
+                        <span style={{ fontSize: 11, color: "#aaa", fontFamily: "var(--font-body)" }}>{t.runs}v · {t.date}</span>
+                      </div>
+                    )}
                   </div>
-                </div>
-              </Link>
+                </Link>
+                {(hovered || confirming) && (
+                  <button
+                    onClick={e => handleDelete(e, t.id)}
+                    title={confirming ? "Confirm delete" : "Delete thread"}
+                    style={{
+                      position: "absolute", top: "50%", right: 8,
+                      transform: "translateY(-50%)",
+                      background: confirming ? "#ff4d4d" : "#fff",
+                      border: `1.5px solid ${confirming ? "#ff4d4d" : "#ccc"}`,
+                      borderRadius: "50%",
+                      width: 22, height: 22,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      cursor: "pointer", fontSize: 11,
+                      color: confirming ? "#fff" : "#aaa",
+                      padding: 0, lineHeight: 1,
+                      transition: "all 0.1s",
+                    }}
+                  >
+                    {confirming ? "✓" : "×"}
+                  </button>
+                )}
+              </div>
             );
           })}
         </div>
