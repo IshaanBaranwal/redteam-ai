@@ -70,6 +70,29 @@ export default function ThreadPage() {
   const [titleDraft, setTitleDraft] = useState("");
   const titleInputRef = useRef<HTMLInputElement>(null);
 
+  // Rebuild state
+  const [isRebuilding, setIsRebuilding] = useState(false);
+  const [rebuildDone, setRebuildDone] = useState(false);
+  const handleRebuild = async () => {
+    if (!currentResult || isRebuilding) return;
+    const defendedAttacks = currentResult.attacks.filter(a => a.defense && (a.defenseVerdict === "addressed" || a.defenseVerdict === "partial"));
+    if (defendedAttacks.length === 0) return;
+    setIsRebuilding(true);
+    setRebuildDone(false);
+    try {
+      const res = await fetch("/api/attack/rebuild", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inputText, inputType, attacks: defendedAttacks }),
+      });
+      if (res.ok) {
+        const { improvedText } = await res.json();
+        if (improvedText) { setInputText(improvedText); setRebuildDone(true); }
+      }
+    } catch {}
+    finally { setIsRebuilding(false); }
+  };
+
   // Share state
   const [shareCopied, setShareCopied] = useState(false);
   const handleShare = () => {
@@ -396,7 +419,7 @@ export default function ThreadPage() {
             <span style={{
               fontSize: 11, color: "#ff4d4d",
               border: "2px solid #ff4d4d",
-              borderRadius: "8px 2px 8px 2px / 2px 8px 2x 8px",
+              borderRadius: "8px 2px 8px 2px / 2px 8px 2px 8px",
               padding: "1px 8px", fontFamily: "var(--font-heading)", fontWeight: 700,
             }}>
               v{versions.length}
@@ -476,6 +499,28 @@ export default function ThreadPage() {
           >
             {isRunning ? "⟳ Running attack..." : "⚡ Run attack"}
           </button>
+
+          {/* Rebuild from defenses button */}
+          {currentResult && currentResult.attacks.some(a => a.defense && (a.defenseVerdict === "addressed" || a.defenseVerdict === "partial")) && (
+            <button
+              onClick={handleRebuild}
+              disabled={isRebuilding || isRunning}
+              style={{
+                width: "100%", marginTop: 10, padding: "11px",
+                fontFamily: "var(--font-body)", fontSize: 14,
+                background: rebuildDone ? "#f0fdf4" : "#fff",
+                color: rebuildDone ? "#22c55e" : "#2d2d2d",
+                border: `2px dashed ${rebuildDone ? "#22c55e" : "#2d2d2d"}`,
+                borderRadius: "5px 15px 5px 15px / 15px 5px 15px 5px",
+                cursor: isRebuilding || isRunning ? "default" : "pointer",
+                transition: "all 0.15s",
+              }}
+              onMouseEnter={e => { if (!isRebuilding && !isRunning) { e.currentTarget.style.background = "#fff9c4"; e.currentTarget.style.borderStyle = "solid"; } }}
+              onMouseLeave={e => { if (!isRebuilding && !isRunning) { e.currentTarget.style.background = rebuildDone ? "#f0fdf4" : "#fff"; e.currentTarget.style.borderStyle = "dashed"; } }}
+            >
+              {isRebuilding ? "⟳ Rebuilding your pitch..." : rebuildDone ? "✓ Pitch updated — review and re-run" : "✦ Rebuild pitch from defenses"}
+            </button>
+          )}
 
           {/* Streaming preview */}
           {isRunning && streamingText && (
