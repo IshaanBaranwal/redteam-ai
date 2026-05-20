@@ -41,14 +41,16 @@ model Run {
 }
 
 model Attack {
-  id        String @id @default(cuid())
-  runId     String
-  run       Run    @relation(fields: [runId], references: [id])
-  personaId String
-  headline  String
-  body      String @db.Text
-  question  String
-  severity  Int
+  id             String  @id @default(cuid())
+  runId          String
+  run            Run     @relation(fields: [runId], references: [id])
+  personaId      String
+  headline       String
+  body           String  @db.Text
+  question       String
+  severity       Int
+  defense        String? @db.Text
+  defenseVerdict String?
 }
 
 model Competitor {

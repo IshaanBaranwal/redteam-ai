@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 type RunRow = {
   id: string; version: number; score: number; verdict: string; weakestPoint: string;
   inputType: string; inputText: string; createdAt: Date;
-  attacks: { personaId: string; headline: string; body: string; question: string; severity: number }[];
+  attacks: { id: string; personaId: string; headline: string; body: string; question: string; severity: number; defense: string | null; defenseVerdict: string | null }[];
   competitors: { name: string; pricing: string; market: string; gap: string; sentiment: string }[];
 };
 
@@ -44,11 +44,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       inputText: r.inputText,
       createdAt: r.createdAt,
       attacks: r.attacks.map(a => ({
+        id: a.id,
         personaId: a.personaId,
         headline: a.headline,
         body: a.body,
         question: a.question,
         severity: a.severity,
+        defense: a.defense ?? null,
+        defenseVerdict: a.defenseVerdict ?? null,
       })),
       competitors: r.competitors.map(c => ({
         name: c.name,

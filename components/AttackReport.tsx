@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PERSONAS } from "@/lib/personas";
 
 const SEV_COLOR = ["#22c55e", "#f59e0b", "#f97316", "#ff4d4d"];
 const SEV_LABEL = ["Low", "Medium", "High", "Critical"];
 const ROTATIONS = [-1.2, 0.8, -0.5, 1.1, -0.8, 0.6, -1.0, 0.7];
 
-interface Attack { personaId: string; headline: string; body: string; question: string; severity: number; }
+interface Attack { id?: string; personaId: string; headline: string; body: string; question: string; severity: number; defense?: string | null; defenseVerdict?: string | null; }
 
 function AttackCard({
   attack,
@@ -30,8 +30,18 @@ function AttackCard({
 
   const [defending, setDefending] = useState(false);
   const [defense, setDefense] = useState("");
-  const [defenseResult, setDefenseResult] = useState<{ response: string; verdict: "addressed" | "partial" | "vulnerable" } | null>(null);
+  const savedVerdict = attack.defenseVerdict as "addressed" | "partial" | "vulnerable" | null | undefined;
+  const [defenseResult, setDefenseResult] = useState<{ response: string; verdict: "addressed" | "partial" | "vulnerable" } | null>(
+    attack.defense && savedVerdict ? { response: attack.defense, verdict: savedVerdict } : null
+  );
   const [defenseLoading, setDefenseLoading] = useState(false);
+
+  useEffect(() => {
+    const v = attack.defenseVerdict as "addressed" | "partial" | "vulnerable" | null | undefined;
+    setDefenseResult(attack.defense && v ? { response: attack.defense, verdict: v } : null);
+    setDefending(false);
+    setDefense("");
+  }, [attack.id]);
 
   const verdictColor = (v: "addressed" | "partial" | "vulnerable") => {
     if (v === "addressed") return "#22c55e";
@@ -47,6 +57,7 @@ function AttackCard({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          attackId: attack.id,
           personaId: attack.personaId,
           personaName: persona.name,
           personaRole: persona.role,

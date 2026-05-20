@@ -16,7 +16,7 @@ import RunLimitModal from "@/components/RunLimitModal";
 
 const PDFExportButton = dynamic(() => import("@/components/PDFExportButton"), { ssr: false });
 
-interface Attack { personaId: string; headline: string; body: string; question: string; severity: number; }
+interface Attack { id?: string; personaId: string; headline: string; body: string; question: string; severity: number; defense?: string | null; defenseVerdict?: string | null; }
 interface Competitor { name: string; pricing: string; market: string; gap: string; sentiment: string; }
 interface RunResult { score: number; verdict: string; weakestPoint: string; attacks: Attack[]; runId: string; version: number; }
 interface VersionEntry { v: number; score: number; date: string; label: string; }

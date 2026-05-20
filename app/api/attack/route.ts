@@ -10,19 +10,31 @@ interface PriorRun {
   version: number;
   score: number;
   weakestPoint: string;
-  attacks: { headline: string }[];
+  attacks: { headline: string; personaId: string; defense?: string | null; defenseVerdict?: string | null }[];
 }
 
 function buildThreadMemory(priorRuns: PriorRun[]): string {
   if (!priorRuns || priorRuns.length === 0) return "";
   const lines = priorRuns.map(run => {
-    const topAttacks = run.attacks.slice(0, 3).map(a => a.headline).join(", ");
-    return `Version ${run.version} (score: ${run.score}): Weakest point was "${run.weakestPoint}". Key attacks: ${topAttacks}.`;
+    const attackLines = run.attacks.slice(0, 5).map(a => {
+      const base = `  • [${a.personaId}] "${a.headline}"`;
+      if (a.defense && a.defenseVerdict) {
+        if (a.defenseVerdict === "addressed") {
+          return `${base} — DEFENDED (verdict: addressed). Do NOT repeat this exact angle. Find a new, harder angle on this concern or probe whether the defense truly holds in practice.`;
+        }
+        if (a.defenseVerdict === "partial") {
+          return `${base} — DEFENDED (verdict: partial). The founder partially addressed this. Press harder — find the gap in their defense.`;
+        }
+        return `${base} — DEFENDED (verdict: still vulnerable). Press harder on this exact weakness.`;
+      }
+      return base;
+    });
+    return `Version ${run.version} (score: ${run.score}): Weakest point was "${run.weakestPoint}".\nAttacks:\n${attackLines.join("\n")}`;
   });
   return `THREAD MEMORY — use to sharpen attacks only, never to adjust scoring:
 This idea has been red-teamed ${priorRuns.length} time${priorRuns.length > 1 ? "s" : ""} before. Use this history to probe known weaknesses harder and avoid repeating generic attacks. History:
 
-${lines.join("\n")}
+${lines.join("\n\n")}
 
 CRITICAL SCORING RULE: Score the CURRENT submission on its own merit. Do NOT lower the score as a penalty for not iterating between runs, and do NOT factor in how many times the idea has been tested. If the submission is unchanged from a prior run, give it the same score unless you find a genuinely new angle that changes the assessment. The score must reflect the idea's survivability today, not a punishment for repetition.`;
 }

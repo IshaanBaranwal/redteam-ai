@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { prisma } from "@/lib/prisma";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -8,7 +9,7 @@ export async function POST(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { personaId, personaName, personaRole, headline, body, question, defense, inputText } = await req.json();
+  const { attackId, personaId, personaName, personaRole, headline, body, question, defense, inputText } = await req.json();
 
   if (!personaId || !personaName || !defense) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -52,6 +53,13 @@ End your response with EXACTLY one of these tags on its own line: [ADDRESSED], [
     } else if (lastLine === "[VULNERABLE]") {
       verdict = "vulnerable";
       responseText = lines.slice(0, -1).join("\n").trim();
+    }
+
+    if (attackId) {
+      await prisma.attack.update({
+        where: { id: attackId },
+        data: { defense, defenseVerdict: verdict },
+      }).catch(() => {});
     }
 
     return NextResponse.json({ response: responseText, verdict });
