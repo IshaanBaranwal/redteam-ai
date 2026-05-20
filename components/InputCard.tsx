@@ -3,11 +3,11 @@
 import { useRef, useCallback, useState } from "react";
 
 const INPUT_TYPES = [
-  { id: "idea",     icon: "💡", label: "Idea",      hint: "Ingenuity, market fit & timing judged",           placeholder: "Describe your idea in plain language. Don't over-polish — the agent works better with raw, honest thinking.\n\nExample: I want to build a tool that lets non-technical founders run adversarial stress-tests on their business ideas using AI personas..." },
-  { id: "pitch",    icon: "📊", label: "Pitch",     hint: "Narrative, slide logic & investor-readiness judged", placeholder: "Paste your pitch deck content or upload the deck as a PDF / PPTX." },
-  { id: "research", icon: "🔬", label: "Research",  hint: "Methodology, citations & logical gaps judged",    placeholder: "Paste your abstract, paper, or research summary." },
-  { id: "strategy", icon: "🗺️", label: "Strategy", hint: "Assumptions, risk & execution gaps judged",       placeholder: "Paste your strategy document, OKRs, or roadmap." },
-  { id: "product",  icon: "📋", label: "PRD",       hint: "User needs, feasibility & prioritisation judged", placeholder: "Paste your product requirements document or feature spec." },
+  { id: "idea",     icon: "💡", label: "Idea",      sub: "startup or concept",     hint: "Ingenuity, market fit & timing judged",           placeholder: "Describe your idea in plain language. Don't over-polish — the agent works better with raw, honest thinking.\n\nExample: I want to build a tool that lets non-technical founders run adversarial stress-tests on their business ideas using AI personas..." },
+  { id: "pitch",    icon: "📊", label: "Pitch",     sub: "deck or narrative",      hint: "Narrative, slide logic & investor-readiness judged", placeholder: "Paste your pitch deck content or upload the deck as a PDF / PPTX." },
+  { id: "research", icon: "🔬", label: "Research",  sub: "paper or study",         hint: "Methodology, citations & logical gaps judged",    placeholder: "Paste your abstract, paper, or research summary." },
+  { id: "strategy", icon: "🗺️", label: "Strategy", sub: "plan or roadmap",        hint: "Assumptions, risk & execution gaps judged",       placeholder: "Paste your strategy document, OKRs, or roadmap." },
+  { id: "product",  icon: "📋", label: "PRD",       sub: "feature or spec doc",    hint: "User needs, feasibility & prioritisation judged", placeholder: "Paste your product requirements document or feature spec." },
 ];
 
 interface InputCardProps {
@@ -51,20 +51,22 @@ export default function InputCard({ inputType, inputText, onInputTypeChange, onI
             return (
               <button key={t.id} onClick={() => onInputTypeChange(t.id)} style={{
                 display: "flex", alignItems: "center", gap: 7,
-                padding: "10px 20px",
+                padding: "8px 16px",
                 borderRadius: "8px 32px 8px 32px / 32px 8px 32px 8px",
                 cursor: "pointer",
                 border: `2px solid ${on ? "#ff4d4d" : "#2d2d2d"}`,
                 background: on ? "#ff4d4d" : "#fff",
-                fontFamily: "var(--font-heading)", fontSize: 15,
                 color: on ? "#fff" : "#2d2d2d",
-                fontWeight: 700,
                 boxShadow: on ? "2px 2px 0px 0px #2d2d2d" : "3px 3px 0px 0px #2d2d2d",
                 transform: on ? "translate(1px, 1px)" : "none",
                 transition: "all 0.1s",
+                textAlign: "left",
               }}>
-                <span>{t.icon}</span>
-                <span>{t.label}</span>
+                <span style={{ fontSize: 16 }}>{t.icon}</span>
+                <div>
+                  <div style={{ fontFamily: "var(--font-heading)", fontSize: 14, fontWeight: 700, lineHeight: 1.2 }}>{t.label}</div>
+                  <div style={{ fontFamily: "var(--font-body)", fontSize: 11, opacity: 0.75, lineHeight: 1.2 }}>{t.sub}</div>
+                </div>
               </button>
             );
           })}

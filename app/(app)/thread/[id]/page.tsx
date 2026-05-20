@@ -23,14 +23,14 @@ interface VersionEntry { v: number; score: number; date: string; label: string; 
 
 type Tab = "attacks" | "competitors" | "progress" | "score";
 const DESKTOP_TABS: { id: Tab; label: string }[] = [
-  { id: "attacks", label: "Attack report" },
+  { id: "attacks", label: "Results" },
   { id: "competitors", label: "Competitive intel" },
-  { id: "progress", label: "Progress" },
+  { id: "progress", label: "History" },
 ];
 const MOBILE_TABS: { id: Tab; label: string }[] = [
-  { id: "attacks", label: "Attacks" },
+  { id: "attacks", label: "Results" },
   { id: "competitors", label: "Intel" },
-  { id: "progress", label: "Progress" },
+  { id: "progress", label: "History" },
   { id: "score", label: "Score" },
 ];
 
@@ -69,6 +69,17 @@ export default function ThreadPage() {
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
   const titleInputRef = useRef<HTMLInputElement>(null);
+
+  // Share state
+  const [shareCopied, setShareCopied] = useState(false);
+  const handleShare = () => {
+    if (!currentResult?.runId) return;
+    const url = `${window.location.origin}/share/${currentResult.runId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    });
+  };
 
   const abortRef = useRef<AbortController | null>(null);
 
@@ -385,11 +396,28 @@ export default function ThreadPage() {
             <span style={{
               fontSize: 11, color: "#ff4d4d",
               border: "2px solid #ff4d4d",
-              borderRadius: "8px 2px 8px 2px / 2px 8px 2px 8px",
+              borderRadius: "8px 2px 8px 2px / 2px 8px 2x 8px",
               padding: "1px 8px", fontFamily: "var(--font-heading)", fontWeight: 700,
             }}>
               v{versions.length}
             </span>
+          )}
+          {currentResult && (
+            <button
+              onClick={handleShare}
+              style={{
+                fontSize: 12, padding: "3px 12px",
+                fontFamily: "var(--font-body)",
+                background: shareCopied ? "#22c55e" : "#fff",
+                color: shareCopied ? "#fff" : "#2d2d2d",
+                border: "2px solid #2d2d2d",
+                borderRadius: "5px 15px 5px 15px / 15px 5px 15px 5px",
+                boxShadow: "2px 2px 0px 0px #2d2d2d",
+                cursor: "pointer", transition: "all 0.15s",
+              }}
+            >
+              {shareCopied ? "✓ Link copied!" : "↗ Share"}
+            </button>
           )}
         </div>
         <UserButton />
@@ -464,6 +492,39 @@ export default function ThreadPage() {
             }}>
               {streamingText.slice(-400)}
               <span style={{ color: "#ff4d4d", fontWeight: 700 }}>▋</span>
+            </div>
+          )}
+
+          {/* Empty state */}
+          {versions.length === 0 && !isRunning && (
+            <div style={{
+              marginTop: 24,
+              background: "#fff9c4",
+              border: "2px dashed #2d2d2d",
+              borderRadius: "30px 5px 20px 5px / 5px 20px 5px 30px",
+              padding: "24px 28px",
+              boxShadow: "4px 4px 0px 0px #2d2d2d",
+            }}>
+              <div style={{ fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: 15, color: "#2d2d2d", marginBottom: 16 }}>
+                How it works
+              </div>
+              {[
+                { n: "1", text: "Describe your idea, pitch, or strategy in the box above — or upload a file" },
+                { n: "2", text: "Pick the personas you want attacking it (default picks are a good start)" },
+                { n: "3", text: "Hit Run attack — you'll get a score, a verdict, and pointed attacks from each persona" },
+              ].map(step => (
+                <div key={step.n} style={{ display: "flex", gap: 12, marginBottom: 12, alignItems: "flex-start" }}>
+                  <div style={{
+                    width: 24, height: 24, flexShrink: 0,
+                    background: "#ff4d4d", color: "#fff",
+                    border: "2px solid #2d2d2d",
+                    borderRadius: "50%",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: 12,
+                  }}>{step.n}</div>
+                  <div style={{ fontFamily: "var(--font-body)", fontSize: 14, color: "#555", lineHeight: 1.6, paddingTop: 2 }}>{step.text}</div>
+                </div>
+              ))}
             </div>
           )}
 
