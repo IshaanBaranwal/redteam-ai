@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import Anthropic from "@anthropic-ai/sdk";
 
+export const maxDuration = 60;
+
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 function extractJSON(text: string): string {
@@ -17,7 +19,7 @@ export async function POST(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { inputText, inputType } = await req.json();
+  const { inputText } = await req.json();
   if (!inputText) return NextResponse.json({ error: "Missing inputText" }, { status: 400 });
 
   const systemPrompt = `You are a competitive intelligence analyst. Use web search to research the competitive landscape for the idea described by the user. Find 4-6 of the most relevant direct or indirect competitors.
@@ -45,14 +47,21 @@ Return ONLY valid JSON — no markdown, no code blocks, no explanation:
       messages: [{ role: "user", content: inputText }],
     });
 
-    const textBlock = response.content.find(b => b.type === "text");
-    if (!textBlock || textBlock.type !== "text") {
+    // Collect all text blocks — web_search responses may have multiple
+    const allText = response.content
+      .filter(b => b.type === "text")
+      .map(b => (b as { type: "text"; text: string }).text)
+      .join("\n");
+
+    if (!allText.trim()) {
+      console.error("Research: no text block in response. Content types:", response.content.map(b => b.type));
       return NextResponse.json({ competitors: [] });
     }
 
-    const parsed = JSON.parse(extractJSON(textBlock.text));
+    const parsed = JSON.parse(extractJSON(allText));
     return NextResponse.json(parsed);
   } catch (err) {
+    console.error("Research route error:", String(err));
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }
