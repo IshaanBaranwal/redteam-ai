@@ -204,6 +204,16 @@ export default function LandingPage() {
         <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "#aaa", marginTop: 20 }}>
           No credit card. No install. Just paste your idea.
         </p>
+        <Link href="/privacy" style={{
+          display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none",
+          marginTop: 12, padding: "5px 14px",
+          fontFamily: "var(--font-body)", fontSize: 12, color: "#555",
+          border: "1.5px dashed #ccc",
+          borderRadius: "8px 32px 8px 32px / 32px 8px 32px 8px",
+          background: "#fff",
+        }}>
+          🔒 Encrypted at rest · Never used to train AI · You own your data
+        </Link>
       </section>
 
       {/* Persona strip */}
@@ -501,6 +511,7 @@ export default function LandingPage() {
         <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
           <Link href="/sign-in" style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "#aaa", textDecoration: "none" }}>Sign in</Link>
           <Link href="/sign-up" style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "#aaa", textDecoration: "none" }}>Sign up</Link>
+          <Link href="/privacy" style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "#aaa", textDecoration: "none" }}>Privacy</Link>
           <a
             href="https://ko-fi.com/ishaanbaranwal"
             target="_blank"

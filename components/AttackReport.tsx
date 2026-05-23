@@ -16,6 +16,7 @@ function AttackCard({
   diffBadge,
   personaName,
   personaRole,
+  onDefenseSubmitted,
 }: {
   attack: Attack;
   index: number;
@@ -23,6 +24,7 @@ function AttackCard({
   diffBadge?: "new" | "repeated";
   personaName: string;
   personaRole: string;
+  onDefenseSubmitted?: (attackId: string, verdict: "addressed" | "partial" | "vulnerable") => void;
 }) {
   const [expanded, setExpanded] = useState(true);
   const persona = PERSONAS.find(p => p.id === attack.personaId) ?? { name: personaName, role: personaRole, icon: "🎯", color: "#aaa" };
@@ -72,6 +74,7 @@ function AttackCard({
         const data = await res.json();
         setDefenseResult(data);
         setDefending(false);
+        if (attack.id) onDefenseSubmitted?.(attack.id, data.verdict);
       }
     } catch {}
     finally { setDefenseLoading(false); }
@@ -297,9 +300,10 @@ interface AttackReportProps {
   inputText?: string;
   diffMap?: Record<string, "new" | "repeated">;
   resolvedAttacks?: Attack[];
+  onDefenseSubmitted?: (attackId: string, verdict: "addressed" | "partial" | "vulnerable") => void;
 }
 
-export default function AttackReport({ attacks, inputText, diffMap, resolvedAttacks }: AttackReportProps) {
+export default function AttackReport({ attacks, inputText, diffMap, resolvedAttacks, onDefenseSubmitted }: AttackReportProps) {
   const [resolvedOpen, setResolvedOpen] = useState(false);
 
   if (attacks.length === 0 && (!resolvedAttacks || resolvedAttacks.length === 0)) return (
@@ -366,6 +370,7 @@ export default function AttackReport({ attacks, inputText, diffMap, resolvedAtta
             diffBadge={diffMap?.[a.personaId]}
             personaName={persona.name}
             personaRole={persona.role}
+            onDefenseSubmitted={onDefenseSubmitted}
           />
         );
       })}

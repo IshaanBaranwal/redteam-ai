@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
 import InputCard from "@/components/InputCard";
 import PersonaSelector from "@/components/PersonaSelector";
@@ -540,6 +541,16 @@ export default function ThreadPage() {
             </div>
           )}
 
+          {/* Privacy notice */}
+          <div style={{ textAlign: "center", marginBottom: 4 }}>
+            <Link href="/privacy" style={{
+              display: "inline-flex", alignItems: "center", gap: 5, textDecoration: "none",
+              fontFamily: "var(--font-body)", fontSize: 11, color: "#aaa",
+            }}>
+              🔒 Encrypted at rest · Never used to train AI
+            </Link>
+          </div>
+
           {/* Empty state */}
           {versions.length === 0 && !isRunning && (
             <div style={{
@@ -605,6 +616,17 @@ export default function ThreadPage() {
                 inputText={inputText}
                 diffMap={attackDiff}
                 resolvedAttacks={resolvedAttacks}
+                onDefenseSubmitted={(attackId, verdict) => {
+                  setCurrentResult(prev => {
+                    if (!prev) return prev;
+                    return {
+                      ...prev,
+                      attacks: prev.attacks.map(a =>
+                        a.id === attackId ? { ...a, defenseVerdict: verdict, defense: verdict } : a
+                      ),
+                    };
+                  });
+                }}
               />
             )}
             {activeTab === "competitors" && <CompetitorTable competitors={competitors} />}
